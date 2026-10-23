@@ -111,6 +111,9 @@ def on_startup():
             db.commit()
             print(f"Admin-Benutzer '{admin_user}' angelegt.")
 
+        crud.bereitstellung_einsatzmittel_id(db)
+        db.commit()
+
         settings = crud.get_settings(db)
         if not settings.admin_email:
             env_admin_email = os.environ.get("ADMIN_EMAIL")
@@ -337,6 +340,7 @@ def _einsatz_form_context(request: Request, user, db: Session, einsatz=None):
         "einsatz": einsatz,
         "next_nummer": einsatz.nummer if einsatz else crud.next_nummer(db),
         "einsatzmittel_list": crud.list_einsatzmittel(db),
+        "bereitstellung_name": models.BEREITSTELLUNG_EINSATZMITTEL,
         "alarmierungen": crud.distinct_alarmierungen(db),
         "art_options": list(models.Art),
         "funktion_options": list(models.Funktion),

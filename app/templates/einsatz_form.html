@@ -51,11 +51,11 @@
     </datalist>
   </label>
 
-  <label>Einsatzmittel
-    <select name="einsatzmittel_id">
+  <label id="label-einsatzmittel">Einsatzmittel
+    <select name="einsatzmittel_id" id="f-einsatzmittel">
       <option value="">— keins —</option>
       {% for em in einsatzmittel_list %}
-      <option value="{{ em.id }}" {{ "selected" if einsatz and einsatz.einsatzmittel_id == em.id }}>{{ em.name }}</option>
+      <option value="{{ em.id }}" {{ "selected" if einsatz and einsatz.einsatzmittel_id == em.id }}{{ " data-bereitstellung" if em.name == bereitstellung_name }}>{{ em.name }}</option>
       {% endfor %}
     </select>
   </label>
@@ -95,6 +95,9 @@
   var labelAngeschnauft = document.getElementById("label-angeschnauft");
   var agt = document.getElementById("f-agt");
   var labelAgt = document.getElementById("label-agt");
+  var einsatzmittel = document.getElementById("f-einsatzmittel");
+  var labelEinsatzmittel = document.getElementById("label-einsatzmittel");
+  var bereitstellungOption = einsatzmittel.querySelector("option[data-bereitstellung]");
 
   function setDisabled(label, input, disabled) {
     label.classList.toggle("field-disabled", disabled);
@@ -108,6 +111,15 @@
       funktion.value = "In Bereitstellung";
     } else if (funktion.value === "In Bereitstellung") {
       funktion.value = "TM";
+    }
+    setDisabled(labelEinsatzmittel, einsatzmittel, !on);
+    if (bereitstellungOption) {
+      bereitstellungOption.hidden = on;
+      if (!on) {
+        bereitstellungOption.selected = true;
+      } else if (bereitstellungOption.selected) {
+        einsatzmittel.value = "";
+      }
     }
     applyFunktion();
   }

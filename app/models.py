@@ -52,6 +52,11 @@ class Funktion(str, enum.Enum):
     in_bereitstellung = "In Bereitstellung"
 
 
+# Reserviertes Einsatzmittel für Einsätze mit eingesetzt == False. Wird beim
+# Start angelegt und serverseitig erzwungen, damit es nicht gelöscht werden kann.
+BEREITSTELLUNG_EINSATZMITTEL = "In Bereitstellung"
+
+
 class AgtGeraet(str, enum.Enum):
     pa = "PA"
     filter = "Filter"

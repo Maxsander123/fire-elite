@@ -121,6 +121,8 @@ def import_csv(db, raw_bytes: bytes) -> dict:
             agt = _parse_optional_enum(row["agt"], models.AgtGeraet, "agt", i)
 
             einsatzmittel_name = (row["einsatzmittel"] or "").strip()
+            if not eingesetzt:
+                einsatzmittel_name = models.BEREITSTELLUNG_EINSATZMITTEL
             if einsatzmittel_name and einsatzmittel_name not in existing_names:
                 created_vehicle_names.add(einsatzmittel_name)
                 existing_names.add(einsatzmittel_name)
