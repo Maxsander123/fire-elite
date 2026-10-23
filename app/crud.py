@@ -123,16 +123,57 @@ def next_nummer(db: Session) -> int:
     return (max_n or 0) + 1
 
 
-def make_room_for_nummer(db: Session, nummer: int, exclude_id: int = None):
+def make_room_for_nummer(db: Session, nummer: int):
     """Zählt alle Einsätze mit nummer >= dem Zielwert eins hoch, damit die
     Zielnummer frei wird. Höchste Nummer zuerst, damit unter dem unique
     constraint nie zwei Zeilen kurzzeitig dieselbe Nummer tragen."""
     q = db.query(models.Einsatz).filter(models.Einsatz.nummer >= nummer)
-    if exclude_id is not None:
-        q = q.filter(models.Einsatz.id != exclude_id)
     for row in q.order_by(models.Einsatz.nummer.desc()).all():
         row.nummer += 1
         db.flush()
+
+
+def move_einsatz_nummer(db: Session, einsatz: "models.Einsatz", nummer: int):
+    """Verschiebt einen bestehenden Einsatz auf eine andere Nummer und rückt
+    die Einsätze dazwischen nach, sodass weder Lücken noch Duplikate
+    entstehen. Beispiel: 5 -> 3 macht aus 3, 4 die 4, 5; 3 -> 5 macht aus
+    4, 5 die 3, 4. Eine Zielnummer hinter der höchsten wird auf die höchste
+    begrenzt, damit am Ende keine Lücke bleibt."""
+    old = einsatz.nummer
+    max_n = db.query(func.max(models.Einsatz.nummer)).scalar() or old
+    nummer = max(1, min(nummer, max_n))
+    if nummer == old:
+        return
+
+    # Eigene Nummer erst auf einen freien Platzhalter parken, sonst kollidiert
+    # das Nachrücken mit dem unique constraint (das war der 500er aus Issue #4).
+    einsatz.nummer = -einsatz.id
+    db.flush()
+
+    if nummer < old:
+        rows = (
+            db.query(models.Einsatz)
+            .filter(models.Einsatz.nummer >= nummer, models.Einsatz.nummer < old)
+            .order_by(models.Einsatz.nummer.desc())
+            .all()
+        )
+        step = 1
+    else:
+        rows = (
+            db.query(models.Einsatz)
+            .filter(models.Einsatz.nummer > old, models.Einsatz.nummer <= nummer)
+            .order_by(models.Einsatz.nummer.asc())
+            .all()
+        )
+        step = -1
+    # Zeile für Zeile in passender Reihenfolge, damit nie zwei Zeilen
+    # kurzzeitig dieselbe Nummer tragen.
+    for row in rows:
+        row.nummer += step
+        db.flush()
+
+    einsatz.nummer = nummer
+    db.flush()
 
 
 def normalize_einsatz_fields(funktion, eingesetzt, angeschnauft, agt):
@@ -189,15 +230,8 @@ def update_einsatz(db: Session, einsatz: "models.Einsatz", *, nummer, start, end
         einsatzmittel_id = bereitstellung_einsatzmittel_id(db)
 
     if nummer != einsatz.nummer:
-        conflict = (
-            db.query(models.Einsatz)
-            .filter(models.Einsatz.nummer == nummer, models.Einsatz.id != einsatz.id)
-            .first()
-        )
-        if conflict:
-            make_room_for_nummer(db, nummer, exclude_id=einsatz.id)
+        move_einsatz_nummer(db, einsatz, nummer)
 
-    einsatz.nummer = nummer
     einsatz.start = start
     einsatz.ende = ende
     einsatz.ort = ort
@@ -215,7 +249,20 @@ def update_einsatz(db: Session, einsatz: "models.Einsatz", *, nummer, start, end
 
 
 def delete_einsatz(db: Session, einsatz: "models.Einsatz"):
+    """Löscht den Einsatz und rückt alle nachfolgenden Nummern eins auf,
+    damit keine Lücke bleibt."""
+    nummer = einsatz.nummer
     db.delete(einsatz)
+    db.flush()
+    rows = (
+        db.query(models.Einsatz)
+        .filter(models.Einsatz.nummer > nummer)
+        .order_by(models.Einsatz.nummer.asc())
+        .all()
+    )
+    for row in rows:
+        row.nummer -= 1
+        db.flush()
     db.commit()
 
 

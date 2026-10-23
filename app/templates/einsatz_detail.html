@@ -31,7 +31,7 @@
 <div class="actions">
   <a href="/einsaetze/{{ einsatz.id }}/edit" class="btn">Bearbeiten</a>
   <form method="post" action="/einsaetze/{{ einsatz.id }}/delete" style="display:inline"
-        onsubmit="return confirm('Einsatz #{{ einsatz.nummer }} wirklich löschen?');">
+        onsubmit="return confirm('Einsatz #{{ einsatz.nummer }} wirklich löschen? Die nachfolgenden Einsatznummern rücken dann eins auf.');">
     <button type="submit" class="btn-secondary btn-danger">Löschen</button>
   </form>
 </div>

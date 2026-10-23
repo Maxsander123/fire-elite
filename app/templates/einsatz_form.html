@@ -8,7 +8,11 @@
     <input type="number" name="nummer" id="f-nummer" min="1" step="1" value="{{ next_nummer }}" required>
   </label>
   <p class="muted full" style="margin-top:-0.6rem;">
+    {% if einsatz %}
+    Wird die Nummer geändert, rücken die Einsätze dazwischen automatisch nach, sodass keine Lücken oder doppelten Nummern entstehen.
+    {% else %}
     Ist diese Nummer bereits vergeben, rücken sie und alle nachfolgenden Nummern automatisch eins auf.
+    {% endif %}
   </p>
 
   <label>Start
