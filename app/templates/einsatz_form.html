@@ -80,7 +80,7 @@
 
   <div class="full actions">
     <button type="submit" class="btn">Speichern</button>
-    <a href="/einsaetze" class="btn-secondary">Abbrechen</a>
+    <a href="{{ '/einsaetze/%d' % einsatz.id if einsatz else '/einsaetze' }}" class="btn-secondary">Abbrechen</a>
   </div>
 </form>
 {% endblock %}
