@@ -55,10 +55,11 @@ jobs:
           echo "created=true" >> "$GITHUB_OUTPUT"
 
   # Ein vom GITHUB_TOKEN angelegtes Release startet keine anderen Workflows,
-  # deshalb wird das Release-Image hier direkt gebaut.
+  # deshalb wird das Release-Image hier direkt gebaut. Manuell gestartet
+  # ("Run workflow") wird das Image auch für ein schon bestehendes Release gebaut.
   image:
     needs: release
-    if: needs.release.outputs.created == 'true'
+    if: needs.release.outputs.created == 'true' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
       packages: write
