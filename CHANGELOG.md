@@ -3,6 +3,9 @@
 Alle relevanten Änderungen an Elite. Neueste Version oben.
 Diese Datei wird auch auf der Seite „Über Elite“ angezeigt; die oberste Version ist die App-Version.
 
+## 1.9 (2026-10-23)
+- „Über Elite“ verlinkt das Projekt auf GitHub: Quellcode, Issues und Changelog (Issue #19)
+
 ## 1.8 (2026-10-23)
 - Fix: „Hell“ im Profil blieb dunkel, weil der Browser noch das alte Stylesheet aus dem Offline-Cache nutzte (Issue #18)
 - Der Offline-Cache wird jetzt bei jeder neuen Version automatisch erneuert
