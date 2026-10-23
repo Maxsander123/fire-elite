@@ -326,3 +326,14 @@ code {
 .chart-card.wide { grid-column: 1 / -1; }
 .chart-card.wide .chart-wrap { height: 320px; }
 .chart-empty { color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 2rem 0; }
+
+/* Einsatzliste: ganze Zeile führt zur Detailseite */
+.clickable-rows tbody tr[data-href] { cursor: pointer; }
+.clickable-rows tbody tr[data-href]:hover td { background: var(--border); }
+.pre-wrap { white-space: pre-wrap; }
+
+/* Auf schmalen Bildschirmen nur die wichtigsten Spalten zeigen,
+   damit die Tabelle ohne seitliches Scrollen passt */
+@media (max-width: 720px) {
+  .data-table .hide-sm { display: none; }
+}

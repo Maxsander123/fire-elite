@@ -1,4 +1,4 @@
-const CACHE_NAME = "fire-elite-static-v1";
+const CACHE_NAME = "fire-elite-static-v2";
 const STATIC_ASSETS = [
   "/static/style.css",
   "/static/logo.png",

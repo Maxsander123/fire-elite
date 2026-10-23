@@ -448,6 +448,24 @@ def einsatz_new(
     return RedirectResponse("/einsaetze?msg=einsatz_created", status_code=303)
 
 
+@app.get("/einsaetze/{einsatz_id}", response_class=HTMLResponse)
+def einsatz_detail(einsatz_id: int, request: Request, db: Session = Depends(get_db)):
+    user = current_user(request, db)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+    einsatz = (
+        db.query(models.Einsatz)
+        .options(joinedload(models.Einsatz.einsatzmittel))
+        .filter(models.Einsatz.id == einsatz_id)
+        .first()
+    )
+    if not einsatz:
+        raise HTTPException(404, "Nicht gefunden")
+    return templates.TemplateResponse(
+        "einsatz_detail.html", {"request": request, "user": user, "einsatz": einsatz}
+    )
+
+
 @app.get("/einsaetze/{einsatz_id}/edit", response_class=HTMLResponse)
 def einsatz_edit_form(einsatz_id: int, request: Request, db: Session = Depends(get_db)):
     user = current_user(request, db)
@@ -505,7 +523,7 @@ def einsatz_edit(
         angeschnauft=bool(angeschnauft),
         agt=models.AgtGeraet(agt) if agt else None,
     )
-    return RedirectResponse("/einsaetze?msg=einsatz_updated", status_code=303)
+    return RedirectResponse(f"/einsaetze/{einsatz.id}?msg=einsatz_updated", status_code=303)
 
 
 @app.post("/einsaetze/{einsatz_id}/delete")

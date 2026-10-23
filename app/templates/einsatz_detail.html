@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Einsatz #{{ einsatz.nummer }}{% endblock %}
+{% block content %}
+<p><a href="/einsaetze">&larr; Alle Einsätze</a></p>
+<h1>Einsatz #{{ einsatz.nummer }} <span class="count">{{ einsatz.art.value }}</span></h1>
+
+<div class="detail-grid">
+  <div><span class="label">Start</span>{{ einsatz.start.strftime("%d.%m.%Y %H:%M") }}</div>
+  <div><span class="label">Ende</span>{{ einsatz.ende.strftime("%d.%m.%Y %H:%M") }}</div>
+  <div><span class="label">Ort</span>{{ einsatz.ort }}</div>
+  <div><span class="label">Art</span>{{ einsatz.art.value }}</div>
+  <div><span class="label">Alarmierung</span>{{ einsatz.alarmierung }}</div>
+  <div><span class="label">Eingesetzt</span>
+    {% if einsatz.eingesetzt %}<span class="ok">Ja</span>{% else %}<span class="nok">Nein</span>{% endif %}
+  </div>
+  <div><span class="label">Funktion</span>{{ einsatz.funktion.value }}</div>
+  <div><span class="label">Einsatzmittel</span>{{ einsatz.einsatzmittel.name if einsatz.einsatzmittel else "—" }}</div>
+  {% if einsatz.funktion.value == "AGT" %}
+  <div><span class="label">Angeschnauft</span>{{ "Ja" if einsatz.angeschnauft else "Nein" }}</div>
+  <div><span class="label">AGT-Gerät</span>{{ einsatz.agt.value if einsatz.angeschnauft and einsatz.agt else "—" }}</div>
+  {% endif %}
+</div>
+
+<div class="detail-grid">
+  <div style="grid-column: 1 / -1;"><span class="label">Bemerkungen</span>
+    <span class="pre-wrap">{{ einsatz.bemerkungen if einsatz.bemerkungen else "—" }}</span>
+  </div>
+</div>
+
+{% if user.role.value == "admin" %}
+<div class="actions">
+  <a href="/einsaetze/{{ einsatz.id }}/edit" class="btn">Bearbeiten</a>
+  <form method="post" action="/einsaetze/{{ einsatz.id }}/delete" style="display:inline"
+        onsubmit="return confirm('Einsatz #{{ einsatz.nummer }} wirklich löschen?');">
+    <button type="submit" class="btn-secondary btn-danger">Löschen</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}
