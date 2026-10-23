@@ -69,7 +69,7 @@ MESSAGES = {
 }
 templates.env.globals["MESSAGES"] = MESSAGES
 
-APP_VERSION = "1.0"
+APP_VERSION = "1.1"
 templates.env.globals["APP_VERSION"] = APP_VERSION
 
 
