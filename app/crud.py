@@ -249,7 +249,20 @@ def update_einsatz(db: Session, einsatz: "models.Einsatz", *, nummer, start, end
 
 
 def delete_einsatz(db: Session, einsatz: "models.Einsatz"):
+    """Löscht den Einsatz und rückt alle nachfolgenden Nummern eins auf,
+    damit keine Lücke bleibt."""
+    nummer = einsatz.nummer
     db.delete(einsatz)
+    db.flush()
+    rows = (
+        db.query(models.Einsatz)
+        .filter(models.Einsatz.nummer > nummer)
+        .order_by(models.Einsatz.nummer.asc())
+        .all()
+    )
+    for row in rows:
+        row.nummer -= 1
+        db.flush()
     db.commit()
 
 

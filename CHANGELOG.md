@@ -6,6 +6,7 @@ Diese Datei wird auch auf der Seite „Über Elite“ angezeigt; die oberste Ver
 ## 1.6 (2026-10-23)
 - Fix: Einsatznummer nachträglich ändern führte zu „Internal Server Error“ (Issue #4)
 - Beim Verschieben einer Einsatznummer rücken die Einsätze dazwischen in beide Richtungen nach, ohne Lücken oder doppelte Nummern
+- Beim Löschen eines Einsatzes rücken die nachfolgenden Einsatznummern eins auf
 
 ## 1.5 (2026-10-23)
 - README für neue Nutzer neu geschrieben: worum es geht, Funktionen und Start auf dem eigenen Server
