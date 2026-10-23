@@ -69,8 +69,16 @@ MESSAGES = {
 }
 templates.env.globals["MESSAGES"] = MESSAGES
 
+APP_VERSION = "1.2"
+templates.env.globals["APP_VERSION"] = APP_VERSION
+
+
 def load_changelog():
-    """Liest CHANGELOG.md (Abschnitte "## <Version> (<Datum>)" mit "- " Punkten)."""
+    """Liest CHANGELOG.md für die About-Seite.
+
+    Format: "## <Version> – <Datum>", optional "### <Gruppe>", Punkte mit "- "
+    (Folgezeilen eingerückt).
+    """
     here = os.path.dirname(os.path.abspath(__file__))
     for path in (os.path.join(here, "CHANGELOG.md"), os.path.join(here, "..", "CHANGELOG.md")):
         if os.path.exists(path):
@@ -79,19 +87,28 @@ def load_changelog():
         return []
     entries = []
     with open(path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
+        for raw in f:
+            line = raw.strip()
             if line.startswith("## "):
-                head = line[3:].strip()
-                version, _, date = head.partition(" ")
-                entries.append({"version": version, "date": date.strip("()"), "items": []})
-            elif line.startswith("- ") and entries:
-                entries[-1]["items"].append(line[2:].strip())
+                version, _, date = line[3:].partition("–")
+                entries.append({"version": version.strip(), "date": date.strip(), "groups": []})
+            elif not entries:
+                continue
+            elif line.startswith("### "):
+                entries[-1]["groups"].append({"title": line[4:].strip(), "items": []})
+            elif line.startswith("- "):
+                if not entries[-1]["groups"]:
+                    entries[-1]["groups"].append({"title": "", "items": []})
+                entries[-1]["groups"][-1]["items"].append(line[2:].strip())
+            elif line and raw[:1].isspace() and entries[-1]["groups"] and entries[-1]["groups"][-1]["items"]:
+                entries[-1]["groups"][-1]["items"][-1] += " " + line
+    for entry in entries:
+        for group in entry["groups"]:
+            group["items"] = [item.replace("`", "") for item in group["items"]]
     return entries
 
 
-CHANGELOG = load_changelog()
-APP_VERSION = CHANGELOG[0]["version"] if CHANGELOG else "unbekannt"
+templates.env.globals["CHANGELOG"] = load_changelog()
 templates.env.globals["APP_VERSION"] = APP_VERSION
 templates.env.globals["CHANGELOG"] = CHANGELOG
 
