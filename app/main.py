@@ -7,7 +7,7 @@ import pyotp
 import qrcode
 import qrcode.image.svg
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import text
@@ -35,7 +35,9 @@ templates = Jinja2Templates(directory="templates")
 def service_worker():
     # aus dem Root-Pfad statt /static/sw.js ausgeliefert, damit der Scope
     # die ganze App abdeckt und nicht nur /static/
-    return FileResponse("static/sw.js", media_type="application/javascript")
+    with open("static/sw.js", encoding="utf-8") as f:
+        js = f.read().replace("__APP_VERSION__", APP_VERSION)
+    return Response(js, media_type="application/javascript", headers={"Cache-Control": "no-cache"})
 
 
 MESSAGES = {
