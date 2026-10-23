@@ -4,9 +4,25 @@
 <h1>Profil</h1>
 
 <section class="panel full-panel">
+  <h2>Darstellung</h2>
+  <form method="post" action="/profile/theme" class="form-grid">
+    <label>Farbschema
+      <select name="theme">
+        {% for value, label in themes.items() %}
+        <option value="{{ value }}"{% if user.theme == value %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <div class="full actions">
+      <button type="submit" class="btn">Speichern</button>
+    </div>
+  </form>
+</section>
+
+<section class="panel full-panel">
   <h2>Zwei-Faktor-Authentifizierung</h2>
   {% if user.totp_enabled %}
-  <p><span class="badge" style="background:rgba(63,185,80,0.15); color:var(--good);">Aktiviert</span></p>
+  <p><span class="badge" style="background:var(--good-bg); color:var(--good);">Aktiviert</span></p>
   <form method="post" action="/profile/2fa/disable" class="form-grid" onsubmit="return confirm('Zwei-Faktor-Authentifizierung wirklich deaktivieren?');">
     <label class="full">Aktuelles Passwort zur Bestätigung
       <input type="password" name="current_password" required autocomplete="current-password">

@@ -32,6 +32,9 @@ class User(Base):
     totp_secret = Column(String(32), nullable=True)
     totp_enabled = Column(Boolean, nullable=False, default=False)
 
+    # Farbschema: "system" folgt der Einstellung des Betriebssystems
+    theme = Column(String(8), nullable=False, default="system", server_default="system")
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
