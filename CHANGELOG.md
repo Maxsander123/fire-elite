@@ -3,6 +3,9 @@
 Alle relevanten Änderungen an Elite. Neueste Version oben.
 Diese Datei wird auch auf der Seite „Über Elite“ angezeigt; die oberste Version ist die App-Version.
 
+## 1.5 (2026-10-23)
+- README für neue Nutzer neu geschrieben: worum es geht, Funktionen und Start auf dem eigenen Server
+
 ## 1.4 (2026-10-23)
 - „Über Elite“ zeigt jetzt den Changelog statt nur der Versionsnummer (Issue #9)
 - Versionsnummer wird aus dieser Datei gelesen
