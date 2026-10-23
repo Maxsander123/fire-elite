@@ -16,6 +16,9 @@ services:
       retries: 10
 
   app:
+    # Fertiges Image aus der GitHub Container Registry (`docker compose pull`),
+    # oder lokal bauen mit `docker compose up -d --build`. Version über ELITE_TAG in .env.
+    image: ghcr.io/siliconserver/fire-elite:${ELITE_TAG:-latest}
     build: .
     restart: unless-stopped
     depends_on:

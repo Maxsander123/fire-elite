@@ -21,13 +21,38 @@ Projektordner unter `./data`.
    Wochenreport-Empfänger – danach in der Weboberfläche unter
    **Einstellungen → E-Mail-Texte** änderbar.
 
-2. Starten:
+2. Starten mit dem fertigen Image aus der GitHub Container Registry
+   (nichts wird lokal gebaut):
    ```bash
-   docker compose up -d --build
+   docker compose pull
+   docker compose up -d
    ```
+   Welche Version läuft, steuert `ELITE_TAG` in der `.env` (siehe unten).
+   Wer lieber selbst baut: `docker compose up -d --build`.
 
 3. Aufrufen unter `http://<server>:8086`. Login mit `ADMIN_USERNAME` /
    `ADMIN_PASSWORD` aus der `.env` (wird beim ersten Start automatisch angelegt).
+
+## Docker-Image
+
+GitHub Actions baut das Image automatisch und legt es unter
+`ghcr.io/siliconserver/fire-elite` ab (für `linux/amd64` und `linux/arm64`):
+
+| Tag            | Inhalt                                               |
+|----------------|------------------------------------------------------|
+| `latest`       | neuestes Release                                     |
+| `1.4`, `1.5` … | genau diese Version (entsteht mit dem Release)       |
+| `main`         | aktueller Stand von `main`, nach jedem Push neu      |
+| `sha-<commit>` | ein bestimmter Commit                                |
+
+Update auf eine neue Version: `ELITE_TAG` in der `.env` setzen (oder auf
+`latest` lassen), dann `docker compose pull && docker compose up -d`.
+
+Ist das Paket auf GitHub privat, vorher einmal anmelden – mit einem
+Personal Access Token (classic) mit Recht `read:packages`:
+```bash
+echo <TOKEN> | docker login ghcr.io -u <github-benutzer> --password-stdin
+```
 
 ## Persistenz
 
@@ -41,7 +66,7 @@ fire-elite/
 ```
 
 Ein Umzug auf einen anderen Server = Ordner `fire-elite/` (inkl. `data/`)
-kopieren und `docker compose up -d --build` erneut ausführen.
+kopieren und `docker compose up -d` erneut ausführen.
 
 ## Funktionen
 
