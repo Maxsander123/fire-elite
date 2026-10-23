@@ -1,4 +1,6 @@
-const CACHE_NAME = "fire-elite-static-v2";
+// __APP_VERSION__ ersetzt main.py beim Ausliefern durch die App-Version: jede
+// neue Version ergibt einen neuen Cache, alte Stände (z.B. style.css) fliegen raus.
+const CACHE_NAME = "fire-elite-static-__APP_VERSION__";
 const STATIC_ASSETS = [
   "/static/style.css",
   "/static/logo.png",
@@ -9,7 +11,10 @@ const STATIC_ASSETS = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches
+      .open(CACHE_NAME)
+      // cache: "reload" umgeht den HTTP-Cache, sonst landet evtl. die alte Datei im neuen Cache
+      .then((cache) => cache.addAll(STATIC_ASSETS.map((url) => new Request(url, { cache: "reload" }))))
   );
   self.skipWaiting();
 });
