@@ -4,4 +4,8 @@ data/
 __pycache__/
 *.pyc
 .venv/
+<<<<<<< HEAD
 docker-compose.override.yml
+=======
+docker-compose.override.yml
+>>>>>>> refs/remotes/origin/main
