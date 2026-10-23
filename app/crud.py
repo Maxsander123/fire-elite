@@ -84,6 +84,11 @@ def get_or_create_einsatzmittel(db: Session, name: str):
     return em
 
 
+def bereitstellung_einsatzmittel_id(db: Session) -> int:
+    """Id des reservierten Einsatzmittels „In Bereitstellung“, legt es bei Bedarf an."""
+    return get_or_create_einsatzmittel(db, models.BEREITSTELLUNG_EINSATZMITTEL).id
+
+
 def einsatzmittel_usage_counts(db: Session) -> dict:
     rows = (
         db.query(models.Einsatz.einsatzmittel_id, func.count(models.Einsatz.id))
@@ -97,6 +102,10 @@ def delete_einsatzmittel(db: Session, einsatzmittel_id: int):
     em = db.query(models.Einsatzmittel).filter(models.Einsatzmittel.id == einsatzmittel_id).first()
     if not em:
         raise ValueError("Einsatzmittel nicht gefunden.")
+    if em.name == models.BEREITSTELLUNG_EINSATZMITTEL:
+        raise ValueError(
+            f"Einsatzmittel „{em.name}“ ist reserviert und kann nicht gelöscht werden."
+        )
     in_use = db.query(models.Einsatz).filter(models.Einsatz.einsatzmittel_id == em.id).count()
     if in_use:
         raise ValueError(
@@ -146,6 +155,8 @@ def normalize_einsatz_fields(funktion, eingesetzt, angeschnauft, agt):
 def create_einsatz(db: Session, *, nummer, start, ende, ort, art, funktion, eingesetzt,
                     alarmierung, bemerkungen, einsatzmittel_id, angeschnauft, agt) -> "models.Einsatz":
     funktion, angeschnauft, agt = normalize_einsatz_fields(funktion, eingesetzt, angeschnauft, agt)
+    if not eingesetzt:
+        einsatzmittel_id = bereitstellung_einsatzmittel_id(db)
 
     if db.query(models.Einsatz).filter(models.Einsatz.nummer == nummer).first():
         make_room_for_nummer(db, nummer)
@@ -174,6 +185,8 @@ def update_einsatz(db: Session, einsatz: "models.Einsatz", *, nummer, start, end
                     funktion, eingesetzt, alarmierung, bemerkungen, einsatzmittel_id,
                     angeschnauft, agt) -> "models.Einsatz":
     funktion, angeschnauft, agt = normalize_einsatz_fields(funktion, eingesetzt, angeschnauft, agt)
+    if not eingesetzt:
+        einsatzmittel_id = bereitstellung_einsatzmittel_id(db)
 
     if nummer != einsatz.nummer:
         conflict = (
