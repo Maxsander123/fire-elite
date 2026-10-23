@@ -10,10 +10,16 @@
   </p>
 </section>
 
-<div class="panel-grid">
-  <section class="panel">
-    <h2>Version</h2>
-    <p>{{ APP_VERSION }}</p>
-  </section>
-</div>
+<section class="panel full-panel">
+  <h2>Version {{ APP_VERSION }}</h2>
+  <h3>Changelog</h3>
+  {% for entry in CHANGELOG %}
+  <h4>Version {{ entry.version }}{% if entry.date %} <small>({{ entry.date }})</small>{% endif %}</h4>
+  <ul>
+    {% for item in entry["items"] %}<li>{{ item }}</li>{% endfor %}
+  </ul>
+  {% else %}
+  <p>Kein Changelog vorhanden.</p>
+  {% endfor %}
+</section>
 {% endblock %}

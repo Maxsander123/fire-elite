@@ -69,8 +69,31 @@ MESSAGES = {
 }
 templates.env.globals["MESSAGES"] = MESSAGES
 
-APP_VERSION = "1.0"
+def load_changelog():
+    """Liest CHANGELOG.md (Abschnitte "## <Version> (<Datum>)" mit "- " Punkten)."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    for path in (os.path.join(here, "CHANGELOG.md"), os.path.join(here, "..", "CHANGELOG.md")):
+        if os.path.exists(path):
+            break
+    else:
+        return []
+    entries = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith("## "):
+                head = line[3:].strip()
+                version, _, date = head.partition(" ")
+                entries.append({"version": version, "date": date.strip("()"), "items": []})
+            elif line.startswith("- ") and entries:
+                entries[-1]["items"].append(line[2:].strip())
+    return entries
+
+
+CHANGELOG = load_changelog()
+APP_VERSION = CHANGELOG[0]["version"] if CHANGELOG else "unbekannt"
 templates.env.globals["APP_VERSION"] = APP_VERSION
+templates.env.globals["CHANGELOG"] = CHANGELOG
 
 
 def current_user(request: Request, db: Session):
