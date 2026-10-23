@@ -3,6 +3,10 @@
 Alle relevanten Änderungen an Elite. Neueste Version oben.
 Diese Datei wird auch auf der Seite „Über Elite“ angezeigt; die oberste Version ist die App-Version.
 
+## 1.6 (2026-10-23)
+- Fix: Einsatznummer nachträglich ändern führte zu „Internal Server Error“ (Issue #4)
+- Beim Verschieben einer Einsatznummer rücken die Einsätze dazwischen in beide Richtungen nach, ohne Lücken oder doppelte Nummern
+
 ## 1.5 (2026-10-23)
 - README für neue Nutzer neu geschrieben: worum es geht, Funktionen und Start auf dem eigenen Server
 
