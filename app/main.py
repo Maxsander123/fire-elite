@@ -10,6 +10,7 @@ from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request,
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import text
 from sqlalchemy.orm import Session, joinedload
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -66,7 +67,10 @@ MESSAGES = {
     "totp_disabled": "Zwei-Faktor-Authentifizierung wurde deaktiviert.",
     "totp_invalid": "Code ungültig, bitte erneut versuchen.",
     "totp_disable_wrong_password": "Passwort falsch, 2FA wurde nicht deaktiviert.",
+    "theme_updated": "Darstellung wurde gespeichert.",
 }
+
+THEMES = {"system": "Wie Betriebssystem", "light": "Hell", "dark": "Dunkel"}
 templates.env.globals["MESSAGES"] = MESSAGES
 
 def load_changelog():
@@ -118,6 +122,11 @@ def _parse_local_dt(value: str) -> datetime:
 @app.on_event("startup")
 def on_startup():
     Base.metadata.create_all(bind=engine)
+    # create_all legt keine neuen Spalten in bestehenden Tabellen an
+    with engine.begin() as conn:
+        conn.execute(text(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS theme VARCHAR(8) NOT NULL DEFAULT 'system'"
+        ))
 
     db = next(get_db())
     try:
@@ -234,7 +243,20 @@ def profile_page(request: Request, db: Session = Depends(get_db)):
     user = current_user(request, db)
     if not user:
         return RedirectResponse("/login", status_code=303)
-    return templates.TemplateResponse("profile.html", {"request": request, "user": user})
+    return templates.TemplateResponse(
+        "profile.html", {"request": request, "user": user, "themes": THEMES}
+    )
+
+
+@app.post("/profile/theme")
+def profile_theme(request: Request, theme: str = Form(...), db: Session = Depends(get_db)):
+    user = current_user(request, db)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+    if theme in THEMES:
+        user.theme = theme
+        db.commit()
+    return RedirectResponse("/profile?msg=theme_updated", status_code=303)
 
 
 @app.post("/profile/password")

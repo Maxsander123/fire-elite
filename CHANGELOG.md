@@ -3,6 +3,11 @@
 Alle relevanten Änderungen an Elite. Neueste Version oben.
 Diese Datei wird auch auf der Seite „Über Elite“ angezeigt; die oberste Version ist die App-Version.
 
+## 1.7 (2026-10-23)
+- Dark- und Light-Mode: im Profil unter „Darstellung“ wählbar (Wie Betriebssystem, Hell, Dunkel) (Issue #18)
+- Standard ist „Wie Betriebssystem“: die App folgt automatisch der Hell/Dunkel-Einstellung des Geräts
+- Diagramme im Dashboard passen ihre Schrift- und Gitterfarben an das Farbschema an
+
 ## 1.6 (2026-10-23)
 - Fix: Einsatznummer nachträglich ändern führte zu „Internal Server Error“ (Issue #4)
 - Beim Verschieben einer Einsatznummer rücken die Einsätze dazwischen in beide Richtungen nach, ohne Lücken oder doppelte Nummern
