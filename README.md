@@ -6,6 +6,11 @@ Projektordner unter `./data`.
 
 ## Setup
 
+0. Aktuelle Version als ZIP oder tar.gz unter
+   [Releases](https://github.com/siliconserver/fire-elite/releases/latest)
+   herunterladen und entpacken (statt `main` zu klonen). Neue Releases entstehen
+   automatisch, sobald eine neue Version oben in `CHANGELOG.md` auf `main` landet.
+
 1. `.env` aus der Vorlage erstellen und Werte anpassen:
    ```bash
    cp .env.example .env
