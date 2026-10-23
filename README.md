@@ -1,173 +1,103 @@
 # Fire Elite (Feuerwehr Einsatz- Logbuch für Individuelle Tätigkeits- und Erfassung)
 
-Web-Tool zum Erfassen und Auswerten von Feuerwehreinsätzen. Läuft komplett per
-`docker compose` (Postgres + FastAPI-App), alle Daten liegen dauerhaft im
-Projektordner unter `./data`.
+Fire Elite ist ein persönliches Einsatzbuch für Feuerwehrleute. Du trägst deine
+Einsätze im Browser ein (am PC oder auf dem Handy) und bekommst eine Übersicht,
+wie oft, wie lange und in welcher Funktion du im Einsatz warst. Alles läuft auf
+deinem eigenen Server, die Daten bleiben bei dir.
 
-## Setup
+## Funktionen
 
-0. Aktuelle Version als ZIP oder tar.gz unter
-   [Releases](https://github.com/siliconserver/fire-elite/releases/latest)
-   herunterladen und entpacken (statt `main` zu klonen). Neue Releases entstehen
-   automatisch, sobald eine neue Version oben in `CHANGELOG.md` auf `main` landet.
+- **Einsätze erfassen**: Nummer, Beginn und Ende, Ort, Einsatzart (TH, Brand,
+  Dienstleistung, Gefahrstoffe), Funktion (TM, AGT, MA, FEZ, GF, EL), Fahrzeug,
+  Alarmierungsstichwort, Atemschutz (angeschnauft, PA/Filter/CSA) und Bemerkungen.
+  Wer nicht eingesetzt war, wird automatisch als „In Bereitstellung“ geführt.
+- **Einsätze nachtragen**: Wird eine schon vergebene Einsatznummer eingetragen,
+  rücken alle folgenden Nummern automatisch eins weiter.
+- **Dashboard**: Einsatzzeit gesamt und im Schnitt, Anzahl Einsätze, Diagramme zu
+  Einsatzarten, Funktionen, Fahrzeugen, Orten, Stichworten, Atemschutz und
+  Einsätzen pro Monat. Der Zeitraum ist frei wählbar (heute, letzte 30 Tage,
+  dieses Jahr, eigener Von/Bis-Zeitraum …).
+- **Eigene Fahrzeuge**: Die Liste der Einsatzmittel passt du an deine Wache an.
+- **CSV-Import**: Bestehende Einsätze aus einer Tabelle übernehmen (Format siehe unten).
+- **Wochenreport per E-Mail**: Einmal pro Woche eine Zusammenfassung der letzten
+  sieben Tage. Tag, Uhrzeit, Empfänger und Text stellst du selbst ein.
+- **Backups**: Tägliche Sicherung der Datenbank, dazu manuelle Sicherung,
+  Download und Wiederherstellung direkt in der Weboberfläche.
+- **Benutzer und Rollen**: Admins dürfen alles, Viewer nur lesen. Optional
+  Zwei-Faktor-Anmeldung mit einer Authenticator-App (Google Authenticator, Authy …).
+- **App fürs Handy**: Im Browser „Zum Home-Bildschirm hinzufügen“, dann startet
+  Fire Elite wie eine eigene App im Vollbild.
 
-1. `.env` aus der Vorlage erstellen und Werte anpassen:
+## Auf dem eigenen Server starten
+
+Du brauchst einen Server (oder Raspberry Pi, NAS …) mit
+[Docker](https://docs.docker.com/engine/install/) und Docker Compose.
+
+1. **Herunterladen**: Die aktuelle Version unter
+   [Releases](https://github.com/siliconserver/fire-elite/releases/latest) als ZIP
+   oder tar.gz laden und auf dem Server entpacken. Gebraucht werden daraus nur
+   `docker-compose.yml` und `.env.example`.
+
+2. **Einstellungen anlegen**:
    ```bash
    cp .env.example .env
    ```
-   Mindestens `POSTGRES_PASSWORD`, `SECRET_KEY`, `ADMIN_PASSWORD` und (falls
-   der Wochenreport genutzt werden soll) die `SMTP_*`-Variablen mit echten
-   Zugangsdaten füllen. `ADMIN_EMAIL` ist nur die Erstbefüllung für den
-   Wochenreport-Empfänger – danach in der Weboberfläche unter
-   **Einstellungen → E-Mail-Texte** änderbar.
+   In der `.env` mindestens diese Werte ändern:
+   - `POSTGRES_PASSWORD` (und dasselbe Passwort in `DATABASE_URL`)
+   - `SECRET_KEY`: ein langer Zufallswert, z. B. aus `openssl rand -hex 32`
+   - `ADMIN_USERNAME` / `ADMIN_PASSWORD`: dein Login
+   - `SMTP_*` und `ADMIN_EMAIL`, falls du den Wochenreport per Mail willst
 
-2. Starten mit dem fertigen Image aus der GitHub Container Registry
-   (nichts wird lokal gebaut):
+3. **Starten**:
    ```bash
    docker compose pull
    docker compose up -d
    ```
-   Welche Version läuft, steuert `ELITE_TAG` in der `.env` (siehe unten).
-   Wer lieber selbst baut: `docker compose up -d --build`.
 
-3. Aufrufen unter `http://<server>:8086`. Login mit `ADMIN_USERNAME` /
-   `ADMIN_PASSWORD` aus der `.env` (wird beim ersten Start automatisch angelegt).
+4. **Öffnen**: Im Browser `http://<server>:8086` aufrufen und mit dem Admin-Login
+   aus der `.env` anmelden. Der Admin wird beim ersten Start automatisch angelegt.
 
-## Docker-Image
+### Aktualisieren
 
-GitHub Actions baut das Image automatisch und legt es unter
-`ghcr.io/siliconserver/fire-elite` ab (für `linux/amd64` und `linux/arm64`):
+Im Ordner mit der `docker-compose.yml`:
 
-| Tag            | Inhalt                                               |
-|----------------|------------------------------------------------------|
-| `latest`       | neuestes Release                                     |
-| `1.4`, `1.5` … | genau diese Version (entsteht mit dem Release)       |
-| `main`         | aktueller Stand von `main`, nach jedem Push neu      |
-| `sha-<commit>` | ein bestimmter Commit                                |
-
-Update auf eine neue Version: `ELITE_TAG` in der `.env` setzen (oder auf
-`latest` lassen), dann `docker compose pull && docker compose up -d`.
-
-Ist das Paket auf GitHub privat, vorher einmal anmelden – mit einem
-Personal Access Token (classic) mit Recht `read:packages`:
 ```bash
-echo <TOKEN> | docker login ghcr.io -u <github-benutzer> --password-stdin
+docker compose pull && docker compose up -d
 ```
 
-## Persistenz
+Standardmäßig läuft immer die neueste Version. Wer bei einer festen Version
+bleiben will, trägt sie in der `.env` bei `ELITE_TAG` ein (z. B. `ELITE_TAG=1.4`).
+Was sich in einer Version geändert hat, steht im [Changelog](CHANGELOG.md) und in
+der App unter „Über Elite“.
 
-Alle Daten liegen im Projektordner, nicht in benannten Docker-Volumes:
+### Wo liegen meine Daten?
+
+Alles liegt im Ordner `data/` neben der `docker-compose.yml`:
 
 ```
-fire-elite/
-  data/
-    postgres/   # komplette Postgres-Datenbank
-    backups/    # tägliche + manuelle Backups (.sql.gz)
+data/
+  postgres/   # die Datenbank
+  backups/    # tägliche und manuelle Backups (.sql.gz)
 ```
 
-Ein Umzug auf einen anderen Server = Ordner `fire-elite/` (inkl. `data/`)
-kopieren und `docker compose up -d` erneut ausführen.
+Für einen Umzug auf einen anderen Server kopierst du den ganzen Ordner
+(inklusive `data/` und `.env`) und startest dort mit `docker compose up -d`.
 
-## Funktionen
+## CSV-Import
 
-### Progressive Web App
-Auf dem Smartphone über den Browser "Zum Home-Bildschirm hinzufügen"
-installierbar (eigenes App-Icon, startet im Vollbild ohne Browser-Leiste).
-Basiert auf einem Web-App-Manifest, Apple-Touch-Icons und einem schlanken
-Service Worker, der nur statische Assets (CSS, Chart.js, Icons) fürs
-App-Shell-Caching vorhält – alle Einsatzdaten kommen immer live vom Server,
-nie aus dem Cache.
-
-### Grundfunktionen
-- **Login mit Rollen**: `admin` (voller Zugriff) und `viewer` (nur lesen).
-- **Zwei-Faktor-Authentifizierung (2FA)**: optional, pro Benutzer über das
-  Profil-Menü mit einer Authenticator-App (Google Authenticator, Authy, …)
-  einrichtbar – QR-Code + manueller Schlüssel, Bestätigung per Code. Dort
-  auch das eigene Passwort änderbar. Verliert jemand sein Gerät, kann ein
-  Admin dessen 2FA in der Benutzerverwaltung fremd deaktivieren.
-
-### Einsätze (`/einsaetze`)
-- Anlegen, bearbeiten, löschen (nur Admin).
-- Felder: Nummer, Start/Ende (Zeitstempel inkl. Zeitzone, wichtig z. B. an
-  Tagen der Uhrumstellung), Ort, Art (TH/Brand/Dienstleistung/Gefahrstoffe),
-  Funktion (TM/AGT/MA/FEZ/GF/EL), Eingesetzt, Alarmierung (mit
-  Autovervollständigung aus bisherigen Einträgen), Bemerkungen, Einsatzmittel
-  (Fahrzeug, konfigurierbar unter `/fahrzeuge`), Angeschnauft und
-  AGT-Gerät (PA/Filter/CSA).
-- Ist "Eingesetzt" nicht gesetzt, wird die Funktion automatisch auf
-  "In Bereitstellung" gesetzt (Feld ausgegraut). "Angeschnauft" ist nur bei
-  Funktion AGT verfügbar, das AGT-Gerät nur wenn "Angeschnauft" aktiv ist –
-  jeweils serverseitig zusätzlich zur UI erzwungen.
-- **Nachträglich einfügen**: Wird beim Anlegen oder Bearbeiten eine bereits
-  vergebene Einsatznummer eingetragen, rücken diese Zeile und alle
-  nachfolgenden Nummern automatisch eins auf.
-
-### CSV-Import (`/einsaetze/import`)
-Importiert Einsätze aus einer hochgeladenen CSV-Datei. Erwartetes Schema
-(Kopfzeile exakt so):
+Über den Menüpunkt **CSV-Import** lädst du eine CSV-Datei hoch. Die erste Zeile muss
+genau so lauten:
 
 ```
 nummer,start,ende,ort,art,funktion,eingesetzt,alarmierung,bemerkungen,einsatzmittel,angeschnauft,agt
 ```
 
-- `start`/`ende`: Zeitstempel inkl. Zeitzonen-Offset, z. B. `2021-05-22 13:05:00+02`.
-- `eingesetzt`/`angeschnauft`: `true`/`false` (`angeschnauft` darf leer sein).
-- `einsatzmittel`, das noch nicht existiert, wird automatisch angelegt.
-- Der Import läuft in einer Transaktion: jeder Fehler (mit Zeilennummer und
-  Grund) bricht den gesamten Import ab, es gibt keinen Teil-Import. Bereits
-  in der Datenbank vorhandene Einsatznummern führen ebenfalls zum Abbruch.
+- `start` / `ende` mit Zeitzone, z. B. `2021-05-22 13:05:00+02`
+- `eingesetzt` / `angeschnauft`: `true` oder `false` (`angeschnauft` darf leer sein)
+- Fahrzeuge, die es noch nicht gibt, werden automatisch angelegt.
+- Bei einem Fehler wird nichts importiert, und du siehst, in welcher Zeile das
+  Problem liegt. Auch schon vorhandene Einsatznummern brechen den Import ab.
 
-### Fahrzeuge / Einsatzmittel (`/fahrzeuge`)
-Eigene Einsatzmittel anlegen und löschen (nur Admin). Ein Einsatzmittel, das
-noch in Einsätzen verwendet wird, kann nicht gelöscht werden.
+## Lizenz
 
-### Dashboard (`/`)
-Ersetzt eine separate Grafana-Instanz. Auswählbarer Zeitraum (Default: alle
-Daten) – Heute, Gestern, letzte 7/14/30/90 Tage, letzte 6/12 Monate, dieses
-Jahr/dieser Monat/diese Woche bis jetzt, oder ein benutzerdefinierter
-Von/Bis-Zeitraum. Zeigt für den gewählten Zeitraum:
-
-- Zeit gesamt und durchschnittliche Einsatzzeit (Stunden), Anzahl Einsätze
-- Tortendiagramme (Anzahl + Prozent): Eingesetzt, PA-Typen, PA-Einsätze
-  (Angeschnauft), Einsatzarten, Funktionen, Einsatzmittel, Einsatzort,
-  Einsatzstichwort
-- Balkendiagramm: Einsätze pro Monat
-
-Diagramme laufen mit lokal eingebundenem Chart.js (kein CDN zur Laufzeit
-nötig).
-
-### E-Mail & Backups (unter `/settings`, nur Admin)
-- **Wöchentlicher Report per Mail**: Anzahl Einsätze und Gesamtstunden der
-  letzten 7 Tage plus Liste der einzelnen Einsätze, an eine konfigurierbare
-  Adresse. Zeitpunkt (Wochentag + Uhrzeit) sowie Betreff/Einleitungstext frei
-  einstellbar, manueller Testversand jederzeit möglich.
-- **Backups**: täglicher `pg_dump` (komprimiert) zur eingestellten Uhrzeit,
-  konfigurierbare Aufbewahrungsanzahl. In der Weboberfläche: Liste aller
-  Backups mit Download, manuellem "Jetzt sichern", Wiederherstellen (mit
-  Sicherheitsabfrage – überschreibt alle aktuellen Daten!) und Löschen. Die
-  `.sql.gz`-Dateien liegen zusätzlich direkt unter `./data/backups`.
-- **Benutzerverwaltung**: neue Admin-/Viewer-Benutzer anlegen, löschen, Rolle
-  ändern (der letzte Admin sowie der eigene Account können nicht gelöscht
-  oder herabgestuft werden), fremde 2FA im Bedarfsfall deaktivieren.
-
-## Projektstruktur
-
-```
-docker-compose.yml
-Dockerfile
-requirements.txt
-.env.example
-data/                # persistente Daten (DB + Backups), per .gitignore ausgeschlossen
-app/
-  main.py            # Routen / Webserver
-  models.py          # Datenbankmodelle (User, Einsatz, Einsatzmittel, Settings)
-  database.py        # DB-Verbindung
-  auth.py            # Passwort-Hashing
-  crud.py            # Business-Logik: Nummern-Reindex, Dashboard-Statistiken, Settings
-  csv_import.py       # CSV-Validierung + Import
-  emailer.py           # SMTP-Versand
-  scheduler.py          # Konfigurierbare Cron-Jobs (Wochenreport, Backup)
-  backup.py              # pg_dump/psql Backup & Restore
-  templates/               # HTML-Seiten
-  static/                   # CSS, PWA-Assets, vendored Chart.js
-```
+MIT-Lizenz, siehe [LICENSE](LICENSE).
